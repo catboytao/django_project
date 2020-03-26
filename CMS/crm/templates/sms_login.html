@@ -1,0 +1,152 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/account.css' %}">
+    <style type="text/css">
+         .error_msg {
+            color:red;
+            position: absolute;
+             font-size: 11px;
+         }
+
+    </style>
+
+{% endblock %}
+{% block title %}
+    短信认证登录
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+    <div class="title">
+        短信登录
+    </div>
+    <div class="content">
+        <form id="LoginForm" method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                        <div class="clearfix">
+                            <div class="col-md-6" style="padding-left: 0;">{{ field }}
+                                <span class="error_msg"></span>
+                            </div>
+                            <div class="col-md-6"><input type="button" id="btnSms" class="btn btn-default" value="点击获取验证码"></div>
+                        </div>
+                    </div>
+                {% elif field.name == 'phone_num' %}
+                    <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <span class="error_msg"></span>
+                    </div>
+                {% endif %}
+
+            {% endfor %}
+            <div>
+                <div style="float:right"><a href="{% url 'crm:login' %}">用户名密码登录？</a></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <input type="button" id="btnSubmit" class="btn btn-primary" value="登录">
+                </div>
+            </div>
+        </form>
+
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+
+        $(function () {
+            bindSendSms();
+            bindClickSubmit();
+        })
+
+        function bindSendSms() {
+                $('#btnSms').click(function () {
+
+                    $('.error_msg').empty();
+                     //获取用户输入的手机号
+                    var phone_num = $('input[name="phone_num"]').val();
+                    console.log(phone_num);
+                    //发送ajax请求
+
+                    $.ajax({
+                        //url:'/crm/checkCode',
+                        url:"{% url 'crm:send_sms' %}", // 路由反向解析
+                        type:'GET',
+                        data: {
+                            'phone_num': phone_num,
+                            'tpl':'login'
+                        },
+                        dataType:'JSON', //将服务器返回的json数据反序列化
+                        success:function (data) {
+                            if(data.status){
+                               console.log('发送成功！');
+                               sendSmsRemind();
+                            }else {
+                                //发送失败 显示错误信息
+                                //data = {"status": false, "error": {"phone_num": ["\u624b\u673a\u53f7\u683c\u5f0f\u9519\u8bef"]}}
+                                $.each(data.error,function (key,val) {
+                                    $("#id_"+key).next().text(val[0])
+                                })
+                            }
+                        }
+                    })
+                })
+             //定时器
+             function sendSmsRemind() {
+                 //将按钮disable
+                 $('#btnSms').prop('disabled',true) //禁用
+                 //创建一个定时器
+                 var time = 60;
+                 var remind = setInterval(function () {
+                     $('#btnSms').val(time + '秒重新发送');
+                     time = time - 1;
+                     if(time < 1) {
+                         clearInterval(remind);
+                         $('#btnSms').val("点击获取验证码").prop('disabled',false);
+                     }
+                 },1000)
+
+             }
+            }
+
+
+        function bindClickSubmit() {
+                $('#btnSubmit').click(function () {
+                    // 清空error信息
+                    $('.error_msg').empty();
+                    // 收集表单中的数据
+                    var allData = $('#LoginForm').serialize(); //所有字段数据 + csrf_token
+                    $.ajax({
+                        url:"{% url 'crm:login_sms' %}",
+                        type:"POST",
+                        data:allData,
+                        dataType: "JSON",
+                        success: function (res) {
+                            console.log(res)
+                            if(!res.status) {
+                                 $.each(res.error,function (key,val) {
+                                    $("#id_"+key).next().text(val[0])
+                                })
+                            }else {
+                                console.log(res.data)
+                                //location.href = res.data; //跳转到‘/index/’
+                            }
+
+                        }
+                    })
+                })
+            }
+    </script>
+
+{% endblock %}
+
+

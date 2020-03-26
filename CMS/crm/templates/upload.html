@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <style>
+        div#img_list img{
+            width: 100px;
+            height: 150px;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="container">
+        <div id="img_list">
+            {% for file in file_list %}
+            <img ni="{{ file.id }}" class="img" src="/{{ file.path }}" />
+            {% endfor %}
+        </div>
+    </div>
+
+<!--    <form action="/upload.html" method="post" enctype="multipart/form-data">-->
+<!--        {% csrf_token %}-->
+<!--        <input type="text" name="username" id="username">-->
+<!--        <input type="file" name="file" id="file">-->
+<!--        <input type="submit" value="提交" onclick="upload()">-->
+<!--    </form>-->
+    <form onsubmit="return false">
+        <div>
+            {% csrf_token %}
+            <input type="text" name="username" id="username">
+            <input type="file" name="file" id="file">
+            <button class="sbt">提交</button>
+            <span style="display:none">
+                <input type="reset" id="form_reset">
+            </span>
+            <span id="warning" style="display:none;color:red">
+                文件不能为空
+            </span>
+        </div>
+    </form>
+
+
+    <script>
+
+        $(function () {
+            bindUpload();
+            bindDel();
+            hideWarning();
+        })
+
+
+
+
+         function bindUpload() {
+             $('.sbt').click(function () {
+                 var formdata = new FormData();
+                var username = $('input#username').val();
+                var file = $('input#file')[0].files[0];
+                var csrf_data = $('[name=csrfmiddlewaretoken]').val();
+
+                formdata.append('username',username);
+                formdata.append('file',file);
+                formdata.append('csrfmiddlewaretoken',csrf_data);
+                    $.ajax({
+                        url:'/upload.html',
+                        type:'post',
+                        data:formdata,
+                        processData:false,  // 对用户输入的数据不进行处理，默认情况下会将用户输入数据当中字符串处理
+                        contentType: false,
+                        success: function (data) {
+                            var dict = JSON.parse(data);
+                            if(dict.status){
+                                 file_path = dict.path;
+                                 file_id = dict.file_id;
+                                 console.log(file_path);
+                                 var img_dom = document.createElement("img");
+                                 img_dom.src = '/' + file_path;
+                                 img_dom.className = 'img';
+                                 $(img_dom).attr("ni",file_id)
+                                 document.getElementById("img_list").appendChild(img_dom);
+                                 resetInput();
+                            }
+                            else{
+
+                                $('#warning').css('display','block');
+                            }
+                        }
+                    });
+             })
+
+            }
+
+         //清空input
+         function resetInput() {
+             $('#form_reset').click();
+             $('#warning').css('display','none');
+         }
+
+         function hideWarning() {
+            $('#warning').click(function (event) {
+                 event.stopPropagation();
+             })
+             $(document).click(function () {
+                 $('#warning').hide();
+             });
+
+         }
+        
+        // function bindUpload() {
+        //     $("button.sbt").click(function () {
+        //         var formdata = new FormData();
+        //         var username = $('input#username').val();
+        //         var file = $('input#file')[0].files[0];
+        //         var csrf_data = $('[name=csrfmiddlewaretoken]').val();
+        //         console.log(file)
+        //         formdata.append('username',username);
+        //         formdata.append('file',file);
+        //         formdata.append('csrfmiddlewaretoken',csrf_data);
+        //         console.log(formdata);
+        //             $.ajax({
+        //                 url:'/upload.html',
+        //                 type:'post',
+        //                 data:formdata,
+        //                 processData:false,  // 对用户输入的数据不进行处理，默认情况下会将用户输入数据当中字符串处理
+        //                 contentType: false,
+        //                 success: function (data) {
+        //                     if(data.status){
+        //                          file_path = data.path;
+        //                          var img = document.createElement("img");
+        //                          img.src = file_path;
+        //
+        //                          var img_list = document.getElementsByClassName("img_list");
+        //                          img_list.addChild(img);
+        //                     }
+        //                 }
+        //             });
+        //         });
+        //     }
+            
+        function bindDel() {
+             console.log("click");
+
+             $("#img_list").on('click','.img',function () {
+
+                 var img_id = $(this).attr('ni');
+                 console.log(img_id);
+                 $.ajax({
+                    url:'/del_img.html',
+                    type:'get',
+                    data:{'img_id':img_id},
+                    success:function (data) {
+                        var dict = JSON.parse(data);
+                        if(dict.status){
+                            $('img[ni="'+img_id+'"]').remove();
+                        }
+                    }
+                })
+            // })
+         })
+        }
+
+    </script>
+
+</body>
+</html>
