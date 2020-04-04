@@ -155,6 +155,16 @@ TENCENT_SMS_TEMPLATE = {
 #     os.path.join(BASE_DIR,"VueBase/dist/static/")
 # ]
 
+#### 登录白名单 无需登录就可以访问的页面
+WHITE_REGEX_URL_LIST = [
+    "/crm/register/",
+    "/crm/send_sms/",
+    "/crm/login/",
+    "/crm/image/code/",
+    "/index/",
+]
+
+
 try:
     from .local_settings import *
 except ImportError:

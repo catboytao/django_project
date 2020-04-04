@@ -1,0 +1,128 @@
+{% extends 'layout/manage.html' %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <a class="btn btn-primary" data-toggle="modal" data-target="#addModal">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建项目
+        </a>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Panel heading without title</div>
+      <div class="panel-body">
+        Panel content
+     </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Panel heading without title</div>
+      <div class="panel-body">
+        Panel content
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Panel heading without title</div>
+      <div class="panel-body">
+        Panel content
+      </div>
+    </div>
+
+<!-- Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+      </div>
+      <div class="modal-body">
+          <form id="addForm">
+              {% for field in form %}
+                  {% if field.label == 'color' %}
+
+                  <div class="form-group">
+                    {% for item in field %}
+                        {{ item }}
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <div class="form-group">
+                      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      {{ field }}
+                    <span class="error_msg"></span>
+                  </div>
+                  {% endif %}
+              {% endfor %}
+          </form>
+{#          <form>#}
+{#          <div class="form-group">#}
+{#            <label for="project">项目名</label>#}
+{#            <input type="text" class="form-control" id="project" placeholder="Email">#}
+{#          </div>#}
+{#          <div class="form-group">#}
+{#            <label for="color">颜色</label>#}
+{#            <input type="text" class="form-control" id="color" placeholder="Password">#}
+{#          </div>#}
+{#          <div class="form-group">#}
+{#            <label for="desc">描述</label>#}
+{#              <textarea name="desc" id="desc" cols="30" rows="10" class="form-control"></textarea>#}
+{#          </div>#}
+{##}
+{#        </form>#}
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="cancel">取消</button>
+        <button type="button" class="btn btn-primary" id="submit">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block js %}
+    <script>
+        $(function () {
+            cancelProject();
+            submitProject();
+        })
+        
+        function cancelProject() {
+            
+        }
+        
+        function submitProject() {
+            $('#submit').click(function () {
+                $.ajax({
+                url:'{% url 'crm:project_list' %}',
+                type:'POST',
+                data:$('#addForm').serialize(),
+                dataType:'JSON',
+                success:function (data) {
+                    console.log(data);
+                    if(data.status){
+                        // 主动刷新页面
+                        location.href = location.href;
+                    }else{
+                         $.each(data.error,function (key,val) {
+                             $("#id_"+key).next().text(val[0])
+                         })
+                    }
+                }
+                })
+            })
+        }
+
+    </script>
+
+{% endblock %}
+
+

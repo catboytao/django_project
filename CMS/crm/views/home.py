@@ -8,10 +8,8 @@
 from django.shortcuts import render, redirect
 
 
-def index(request):
-    if request.tracer:
-        return render(request,"index.html")
-    return redirect("crm:login")
+def home(request):
+    pass
 
 
 

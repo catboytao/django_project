@@ -7,7 +7,7 @@
 # @Software: PyCharm
 
 from django.urls import path
-from crm.views import account,home
+from crm.views import account,home,project
 
 urlpatterns = [
     path('register/', account.register, name='register'),
@@ -16,6 +16,9 @@ urlpatterns = [
     path('login/', account.login, name="login"),
     path('image/code/', account.image_code, name="image_code"),
     path('articles/', account.formset, name="articles"),
-    path('index/',home.index,name="index"),
     path('logout/',account.logout,name="logout"),
+
+    # 项目管理
+    path('project/list/',project.project_list,name="project_list")
+
 ]

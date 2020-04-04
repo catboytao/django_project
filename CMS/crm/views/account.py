@@ -1,5 +1,7 @@
+import datetime
 import json
 import os
+import uuid
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -106,7 +108,19 @@ def register(request):
     if form.is_valid():
         # 验证成功  保存用户信息到数据库
         form.instance.password = md5(form.cleaned_data['password'])
+        # 在用户表中新建一条数据
         instance = form.save() # 将数据保存到数据库，会自动剔除没用的字段
+        # 创建交易记录
+        policy_obj = models.PricePolicy.objects.filter(category=1,title="个人免费版").first()
+        models.Transaction.objects.create(
+            status=2,
+            order=str(uuid.uuid4()),
+            user=instance,
+            price_policy=policy_obj,
+            count=0,
+            price=0,
+            start_datetime=datetime.datetime.now()
+        )
         ret["data"] = "/crm/login/sms/"
     else:
         ret["status"] = False
@@ -152,7 +166,7 @@ def login_sms(request):
         user_obj = form.cleaned_data['phone_num']
         # 将用户信息存入session中
         request.session['username'] = user_obj.username
-        return JsonResponse({"status":True,"msg":"登录成功","data":"/index/"})
+        return JsonResponse({"status":True,"msg":"登录成功","data":"/crm/project/list"})
     return JsonResponse({"status":False,"error":form.errors})
 
 
@@ -170,7 +184,7 @@ def login(request):
         if user_obj:
             request.session["user_id"] = user_obj.id
             request.session.set_expiry(60*60)
-            return redirect("/index/")
+            return redirect("crm:project_list")
         else:
             form.add_error("username","用户名或密码错误")
     return render(request, 'login.html', {"form":form})

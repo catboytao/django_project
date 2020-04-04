@@ -69,11 +69,12 @@
         $(function () {
             bindRefreshCode();
         })
-
-        $('#imgCode').click(function () {
+        function bindRefreshCode(){
+            $('#imgCode').click(function () {
             var oldSrc = $(this).attr('src');
             $(this).attr('src',oldSrc+'?');
         })
+        }
 
     </script>
 

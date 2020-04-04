@@ -17,12 +17,12 @@ from django.contrib import admin
 from django.urls import path,include
 from django.views.generic.base import TemplateView
 
-from crm.views import account
+from crm.views import account,home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', account.login),
-    path('index/', account.index),
+    path('index/', account.index,name="index"),
     path('logout/', account.logout),
     path('upload.html', account.upload),
     path('del_img.html', account.del_img),
